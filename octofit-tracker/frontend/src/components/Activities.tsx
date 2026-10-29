@@ -1,16 +1,23 @@
 import { CapabilityCard } from './CapabilityCard.js';
+import { getJson } from '../api/client.js';
+import { useCapabilityData } from './useCapabilityData.js';
 
 type Activity = { type: string; minutes: number; points: number };
 
+function loadActivities() {
+  return getJson<{ activities: Activity[] }>('/api/activities').then(({ activities }) => activities);
+}
+
 export default function Activities() {
+  const state = useCapabilityData(loadActivities, 'Activities');
+
   return (
     <CapabilityCard<Activity>
       title="Activities"
       description="Track student activity minutes and points."
-      endpoint="/api/activities"
-      dataKey="activities"
       emptyMessage="No activities yet."
       renderItem={(activity) => `${activity.type}: ${activity.minutes} minutes, ${activity.points} points`}
+      state={state}
     />
   );
 }
