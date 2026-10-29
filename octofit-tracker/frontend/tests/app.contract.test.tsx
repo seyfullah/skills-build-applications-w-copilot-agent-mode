@@ -9,10 +9,10 @@ function renderRoute(route: string) {
 }
 
 const capabilities = [
-  { route: '/activities', empty: { activities: [] }, emptyText: /no activities/i },
-  { route: '/teams', empty: { teams: [] }, emptyText: /no teams/i },
-  { route: '/leaderboard', empty: { leaderboard: [] }, emptyText: /no (leaderboard|rankings|scores)/i },
-  { route: '/workouts', empty: { suggestions: [] }, emptyText: /no (workout|suggestions)/i },
+  { route: '/activities', empty: { activities: [] }, emptyText: /no activities/i, successText: /run/i },
+  { route: '/teams', empty: { teams: [] }, emptyText: /no teams/i, successText: /Octocats/i },
+  { route: '/leaderboard', empty: { leaderboard: [] }, emptyText: /no (leaderboard|rankings|scores)/i, successText: /90/ },
+  { route: '/workouts', empty: { suggestions: [] }, emptyText: /no (workout|suggestions)/i, successText: /Intervals/i },
 ];
 
 describe('OctoFit presentation contract', () => {
@@ -61,6 +61,12 @@ describe('OctoFit presentation contract', () => {
         vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => {})));
         renderRoute(capability.route);
         expect(screen.getByRole('status')).toHaveTextContent(/loading/i);
+      });
+
+      it('announces a successful load and renders returned data', async () => {
+        renderRoute(capability.route);
+        await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/loaded/i));
+        expect(screen.getByText(capability.successText)).toBeInTheDocument();
       });
 
       it('shows a meaningful empty state', async () => {
