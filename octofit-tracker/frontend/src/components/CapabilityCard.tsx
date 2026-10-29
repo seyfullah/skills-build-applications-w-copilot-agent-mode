@@ -1,44 +1,15 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { getJson } from '../api/client.js';
+import type { ReactNode } from 'react';
+import type { CapabilityState } from './useCapabilityData.js';
 
 type Props<T> = {
   title: string;
   description: string;
-  endpoint: string;
-  dataKey: string;
   emptyMessage: string;
   renderItem: (item: T) => ReactNode;
+  state: CapabilityState<T>;
 };
 
-type LoadState<T> =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'success'; items: T[] };
-
-export function CapabilityCard<T>({ title, description, endpoint, dataKey, emptyMessage, renderItem }: Props<T>) {
-  const [state, setState] = useState<LoadState<T>>({ status: 'loading' });
-
-  useEffect(() => {
-    let active = true;
-    setState({ status: 'loading' });
-
-    getJson<Record<string, T[]>>(endpoint)
-      .then((response) => {
-        const items = response[dataKey];
-        if (!Array.isArray(items)) throw new Error(`The response did not include ${dataKey}.`);
-        if (active) setState({ status: 'success', items });
-      })
-      .catch((error: unknown) => {
-        if (!active) return;
-        const detail = error instanceof Error ? error.message : 'Please try again.';
-        setState({ status: 'error', message: `Unable to load ${title.toLowerCase()}: ${detail}` });
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [dataKey, endpoint, title]);
-
+export function CapabilityCard<T>({ title, description, emptyMessage, renderItem, state }: Props<T>) {
   return (
     <section className="card h-100">
       <div className="card-body">
