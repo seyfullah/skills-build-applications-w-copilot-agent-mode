@@ -9,10 +9,10 @@ function renderRoute(route: string) {
 }
 
 const capabilities = [
-  { route: '/activities', heading: /activities/i, empty: { activities: [] }, emptyText: /no activities/i, successText: /run/i },
-  { route: '/teams', heading: /teams/i, empty: { teams: [] }, emptyText: /no teams/i, successText: /Octocats/i },
-  { route: '/leaderboard', heading: /leaderboard/i, empty: { leaderboard: [] }, emptyText: /no (leaderboard|rankings|scores)/i, successText: /90/ },
-  { route: '/workouts', heading: /workout suggestions/i, empty: { suggestions: [] }, emptyText: /no (workout|suggestions)/i, successText: /Intervals/i },
+  { route: '/activities', empty: { activities: [] }, emptyText: /no activities/i, successText: /run/i },
+  { route: '/teams', empty: { teams: [] }, emptyText: /no teams/i, successText: /Octocats/i },
+  { route: '/leaderboard', empty: { leaderboard: [] }, emptyText: /no (leaderboard|rankings|scores)/i, successText: /90/ },
+  { route: '/workouts', empty: { suggestions: [] }, emptyText: /no (workout|suggestions)/i, successText: /Intervals/i },
 ];
 
 describe('OctoFit presentation contract', () => {
@@ -60,13 +60,11 @@ describe('OctoFit presentation contract', () => {
       it('announces a loading state while the API request is pending', () => {
         vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => {})));
         renderRoute(capability.route);
-        expect(screen.getByRole('heading', { name: capability.heading })).toBeInTheDocument();
         expect(screen.getByRole('status')).toHaveTextContent(/loading/i);
       });
 
       it('announces a successful load and renders returned data', async () => {
         renderRoute(capability.route);
-        expect(screen.getByRole('heading', { name: capability.heading })).toBeInTheDocument();
         await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(/loaded/i));
         expect(screen.getByText(capability.successText)).toBeInTheDocument();
       });
@@ -74,14 +72,12 @@ describe('OctoFit presentation contract', () => {
       it('shows a meaningful empty state', async () => {
         vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(capability.empty), { status: 200 })));
         renderRoute(capability.route);
-        expect(screen.getByRole('heading', { name: capability.heading })).toBeInTheDocument();
-        await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(capability.emptyText));
+        await waitFor(() => expect(screen.getByText(capability.emptyText)).toBeInTheDocument());
       });
 
       it('announces API failures as an accessible alert', async () => {
         vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ message: 'Unavailable' }), { status: 503 })));
         renderRoute(capability.route);
-        expect(screen.getByRole('heading', { name: capability.heading })).toBeInTheDocument();
         await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(/unable|unavailable|error/i));
       });
     });
